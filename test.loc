@@ -1,0 +1,4 @@
+module test-tensor-cpp (test)
+
+import tensor.test (test)
+import tensor-cpp

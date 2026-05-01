@@ -1,0 +1,11 @@
+name: tensor-cpp
+version: 0.1.0
+homepage: https://github.com/morloclib/tensor-cpp
+synopsis: C++ implementations for tensor operations
+description: C++ implementations of foundational dense tensor operations.
+category: data
+license: MIT
+author: "Zebulun Arendsee"
+maintainer: "z@morloc.io"
+github: https://github.com/morloclib/tensor-cpp
+bug-reports: https://github.com/morloclib/tensor-cpp
