@@ -1,9 +1,9 @@
 #ifndef __MORLOC__TENSOR_HPP__
 #define __MORLOC__TENSOR_HPP__
 
-// C++ implementations of the morloc tensor stdlib.
+// C++ implementations of the morloc tensor stdlib (ranks 2-5).
 // Built on mlc::Tensor (vector + mdspan). Uses .view() (mdspan operator())
-// for multi-dim access.
+// for multi-dim access. Rank-1 (Vector) lives in vector-cpp/vector.hpp.
 
 #include "mlc_tensor.hpp"
 #include <algorithm>
@@ -16,9 +16,9 @@
 // argument, so plain function templates would fail deduction. Each function
 // returns a small proxy that holds the construction parameters and exposes
 // templated conversion operators; T is resolved at the call site from the
-// LHS type. The compiler emits e.g. `std::vector<double> v = morloc_zeros1(3)`
-// or `mlc::Tensor2<float> m = morloc_identity(4)`, and the matching conversion
-// operator instantiates the concrete value with the correct element type.
+// LHS type. The compiler emits e.g. `mlc::Tensor2<float> m = morloc_identity(4)`,
+// and the matching conversion operator instantiates the concrete value with
+// the correct element type.
 //
 // fill takes the value as its first argument, so T is deducible there and no
 // proxy is needed.
@@ -31,12 +31,6 @@ struct Zeros {
     std::array<int64_t, N> dims;
 
     template <class T>
-    operator std::vector<T>() const {
-        static_assert(N == 1, "rank > 1 zeros does not convert to std::vector");
-        return std::vector<T>(static_cast<size_t>(dims[0]), T(0));
-    }
-
-    template <class T>
     operator mlc::Tensor<T, N>() const {
         return mlc::Tensor<T, N>(dims);
     }
@@ -45,12 +39,6 @@ struct Zeros {
 template <std::size_t N>
 struct Ones {
     std::array<int64_t, N> dims;
-
-    template <class T>
-    operator std::vector<T>() const {
-        static_assert(N == 1, "rank > 1 ones does not convert to std::vector");
-        return std::vector<T>(static_cast<size_t>(dims[0]), T(1));
-    }
 
     template <class T>
     operator mlc::Tensor<T, N>() const {
@@ -74,9 +62,6 @@ struct Identity {
 
 }  // namespace mlc_ctor
 
-inline mlc_ctor::Zeros<1> morloc_zeros1(int64_t d1) {
-    return mlc_ctor::Zeros<1>{{d1}};
-}
 inline mlc_ctor::Zeros<2> morloc_zeros2(int64_t d1, int64_t d2) {
     return mlc_ctor::Zeros<2>{{d1, d2}};
 }
@@ -90,9 +75,6 @@ inline mlc_ctor::Zeros<5> morloc_zeros5(int64_t d1, int64_t d2, int64_t d3, int6
     return mlc_ctor::Zeros<5>{{d1, d2, d3, d4, d5}};
 }
 
-inline mlc_ctor::Ones<1> morloc_ones1(int64_t d1) {
-    return mlc_ctor::Ones<1>{{d1}};
-}
 inline mlc_ctor::Ones<2> morloc_ones2(int64_t d1, int64_t d2) {
     return mlc_ctor::Ones<2>{{d1, d2}};
 }
@@ -112,14 +94,8 @@ inline mlc_ctor::Identity morloc_identity(int64_t n) {
 
 // ---------------------------------------------------------------------------
 // fill: T is deducible from the value argument, so a plain template suffices.
-// fill1 returns std::vector<T> (Vector maps to std::vector); higher ranks
-// return mlc::TensorN<T>.
+// Returns mlc::TensorN<T> for N in [2,5].
 // ---------------------------------------------------------------------------
-
-template <class T>
-std::vector<T> morloc_fill1(const T& v, int64_t d1) {
-    return std::vector<T>(static_cast<size_t>(d1), v);
-}
 
 template <class T>
 mlc::Tensor2<T> morloc_fill2(const T& v, int64_t d1, int64_t d2) {
