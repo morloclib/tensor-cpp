@@ -151,13 +151,25 @@ mlc::Tensor2<T> morloc_matmul(const mlc::Tensor2<T>& A, const mlc::Tensor2<T>& B
 }
 
 // ---------------------------------------------------------------------------
+// Eq: structural equality on shape and storage. mlc::Tensor itself defines
+// no operator==, so the generic morloc_eq template in root-cpp would fail
+// to compile on tensors. Each rank routes through a specialized comparator.
+// ---------------------------------------------------------------------------
+
+template <class T, int N>
+bool morloc_tensor_eq(const mlc::Tensor<T, N>& a, const mlc::Tensor<T, N>& b) {
+    return a.shape() == b.shape() && a.storage() == b.storage();
+}
+
+// ---------------------------------------------------------------------------
 // Packable: tuple-of-(dims, flat-vector) <-> mlc::Tensor.
 //
 // pack: take a (dims-tuple, flat std::vector) and construct an mlc::Tensor
 //   that takes ownership of the vector. No data copy: the existing storage
 //   is moved into the tensor.
-// unpack: take an mlc::Tensor and yield (dims-tuple, flat std::vector). The
-//   tensor's storage is moved out, also no data copy.
+// unpack: take an mlc::Tensor by const reference and yield
+//   (dims-tuple, flat std::vector). Storage is copied -- the morloc pool
+//   binds unpack arguments by const reference, so moving out is unavailable.
 //
 // The morloc compiler routes serialization through these functions for any
 // cross-language tensor passing.
@@ -185,9 +197,9 @@ namespace mlc_pack_detail {
         }
     }
     template <class T, class S>
-    std::vector<T> from_storage(std::vector<S>&& data) {
+    std::vector<T> from_storage(const std::vector<S>& data) {
         if constexpr (std::is_same_v<T, S>) {
-            return std::move(data);
+            return data;
         } else {
             std::vector<T> out(data.size());
             for (size_t i = 0; i < data.size(); i++) out[i] = static_cast<T>(data[i]);
@@ -214,13 +226,13 @@ mlc::Tensor2<T> morloc_packMatrix(
 
 template <class T>
 std::tuple<std::tuple<int, int>, std::vector<T>>
-morloc_unpackMatrix(mlc::Tensor2<T>& t)
+morloc_unpackMatrix(const mlc::Tensor2<T>& t)
 {
     using S = mlc::tensor_storage_t<T>;
     auto sh = t.shape();
     return std::make_tuple(
         std::make_tuple((int)sh[0], (int)sh[1]),
-        mlc_pack_detail::from_storage<T, S>(std::move(t.storage())));
+        mlc_pack_detail::from_storage<T, S>(t.storage()));
 }
 
 template <class T>
@@ -243,13 +255,13 @@ mlc::Tensor3<T> morloc_packTensor3(
 
 template <class T>
 std::tuple<std::tuple<int, int, int>, std::vector<T>>
-morloc_unpackTensor3(mlc::Tensor3<T>& t)
+morloc_unpackTensor3(const mlc::Tensor3<T>& t)
 {
     using S = mlc::tensor_storage_t<T>;
     auto sh = t.shape();
     return std::make_tuple(
         std::make_tuple((int)sh[0], (int)sh[1], (int)sh[2]),
-        mlc_pack_detail::from_storage<T, S>(std::move(t.storage())));
+        mlc_pack_detail::from_storage<T, S>(t.storage()));
 }
 
 template <class T>
@@ -274,13 +286,13 @@ mlc::Tensor4<T> morloc_packTensor4(
 
 template <class T>
 std::tuple<std::tuple<int, int, int, int>, std::vector<T>>
-morloc_unpackTensor4(mlc::Tensor4<T>& t)
+morloc_unpackTensor4(const mlc::Tensor4<T>& t)
 {
     using S = mlc::tensor_storage_t<T>;
     auto sh = t.shape();
     return std::make_tuple(
         std::make_tuple((int)sh[0], (int)sh[1], (int)sh[2], (int)sh[3]),
-        mlc_pack_detail::from_storage<T, S>(std::move(t.storage())));
+        mlc_pack_detail::from_storage<T, S>(t.storage()));
 }
 
 template <class T>
@@ -306,13 +318,13 @@ mlc::Tensor5<T> morloc_packTensor5(
 
 template <class T>
 std::tuple<std::tuple<int, int, int, int, int>, std::vector<T>>
-morloc_unpackTensor5(mlc::Tensor5<T>& t)
+morloc_unpackTensor5(const mlc::Tensor5<T>& t)
 {
     using S = mlc::tensor_storage_t<T>;
     auto sh = t.shape();
     return std::make_tuple(
         std::make_tuple((int)sh[0], (int)sh[1], (int)sh[2], (int)sh[3], (int)sh[4]),
-        mlc_pack_detail::from_storage<T, S>(std::move(t.storage())));
+        mlc_pack_detail::from_storage<T, S>(t.storage()));
 }
 
 #endif

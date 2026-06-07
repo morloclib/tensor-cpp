@@ -4,10 +4,13 @@ import tensor
 import vector-cpp
 import root-cpp
 
-type Cpp => (Matrix (m :: Nat) (n :: Nat) a) = "mlc::Tensor2<$3>" m n a
-type Cpp => (Tensor3 (d1 :: Nat) (d2 :: Nat) (d3 :: Nat) a) = "mlc::Tensor3<$4>" d1 d2 d3 a
-type Cpp => (Tensor4 (d1 :: Nat) (d2 :: Nat) (d3 :: Nat) (d4 :: Nat) a) = "mlc::Tensor4<$5>" d1 d2 d3 d4 a
-type Cpp => (Tensor5 (d1 :: Nat) (d2 :: Nat) (d3 :: Nat) (d4 :: Nat) (d5 :: Nat) a) = "mlc::Tensor5<$6>" d1 d2 d3 d4 d5 a
+-- $N indexes TYPE parameters only; kind-kinded parameters (Nat phantom
+-- dims) are skipped in macro indexing. For Matrix/Tensor* the only
+-- type parameter is the element type, so the form references $1.
+type Cpp => (Matrix (m :: Nat) (n :: Nat) a) = "mlc::Tensor2<$1>" m n a
+type Cpp => (Tensor3 (d1 :: Nat) (d2 :: Nat) (d3 :: Nat) a) = "mlc::Tensor3<$1>" d1 d2 d3 a
+type Cpp => (Tensor4 (d1 :: Nat) (d2 :: Nat) (d3 :: Nat) (d4 :: Nat) a) = "mlc::Tensor4<$1>" d1 d2 d3 d4 a
+type Cpp => (Tensor5 (d1 :: Nat) (d2 :: Nat) (d3 :: Nat) (d4 :: Nat) (d5 :: Nat) a) = "mlc::Tensor5<$1>" d1 d2 d3 d4 d5 a
 
 
 %inline
@@ -27,6 +30,18 @@ source Cpp from "tensor.hpp"
     , "morloc_identity" as identity
     , "morloc_matmul" as matmul
     )
+
+instance Eq (Matrix d1 d2 a) where
+  %inline source Cpp from "tensor.hpp" ("morloc_tensor_eq" as (==))
+
+instance Eq (Tensor3 d1 d2 d3 a) where
+  %inline source Cpp from "tensor.hpp" ("morloc_tensor_eq" as (==))
+
+instance Eq (Tensor4 d1 d2 d3 d4 a) where
+  %inline source Cpp from "tensor.hpp" ("morloc_tensor_eq" as (==))
+
+instance Eq (Tensor5 d1 d2 d3 d4 d5 a) where
+  %inline source Cpp from "tensor.hpp" ("morloc_tensor_eq" as (==))
 
 instance Packable ((Int, Int), Vector (d1 * d2) a) (Matrix d1 d2 a) where
   source Cpp from "tensor.hpp"
