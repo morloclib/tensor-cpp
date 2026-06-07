@@ -1,5 +1,5 @@
 name: tensor-cpp
-version: 0.2.0
+version: 0.3.0
 homepage: https://github.com/morloclib/tensor-cpp
 synopsis: C++ implementations for tensor operations
 description: C++ implementations of foundational dense tensor operations.
