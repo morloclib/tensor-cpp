@@ -9,3 +9,8 @@ author: "Zebulun Arendsee"
 maintainer: "z@morloc.io"
 github: https://github.com/morloclib/tensor-cpp
 bug-reports: https://github.com/morloclib/tensor-cpp
+expose:
+  cpp:
+    - tensor.hpp
+    - mdspan.hpp
+    - MDSPAN_LICENSE
