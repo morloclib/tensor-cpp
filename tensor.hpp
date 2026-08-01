@@ -332,15 +332,25 @@ mlc::Tensor2<T> morloc_packMatrix(
     return mlc::Tensor2<T>(std::move(storage), std::array<int64_t, 2>{d1, d2});
 }
 
+// unpack borrows the tensor's storage when the wire element type matches the
+// storage element type (the common case): the unpacked wire tuple is consumed
+// within the same full expression that calls unpack (`_put_value(unpack(t),
+// schema)`), so a reference into `t`'s storage stays valid for its only use and
+// no copy is made. When the types differ (e.g. bool vs uint8_t) a conversion is
+// unavoidable, so an owning vector is returned instead.
 template <class T>
-std::tuple<std::tuple<int, int>, std::vector<T>>
-morloc_unpackMatrix(const mlc::Tensor2<T>& t)
+auto morloc_unpackMatrix(const mlc::Tensor2<T>& t)
 {
     using S = mlc::tensor_storage_t<T>;
     auto sh = t.shape();
-    return std::make_tuple(
-        std::make_tuple((int)sh[0], (int)sh[1]),
-        mlc_pack_detail::from_storage<T, S>(t.storage()));
+    if constexpr (std::is_same_v<T, S>) {
+        return std::tuple<std::tuple<int, int>, const std::vector<S>&>(
+            std::make_tuple((int)sh[0], (int)sh[1]), t.storage());
+    } else {
+        return std::make_tuple(
+            std::make_tuple((int)sh[0], (int)sh[1]),
+            mlc_pack_detail::from_storage<T, S>(t.storage()));
+    }
 }
 
 template <class T>
@@ -362,14 +372,18 @@ mlc::Tensor3<T> morloc_packTensor3(
 }
 
 template <class T>
-std::tuple<std::tuple<int, int, int>, std::vector<T>>
-morloc_unpackTensor3(const mlc::Tensor3<T>& t)
+auto morloc_unpackTensor3(const mlc::Tensor3<T>& t)
 {
     using S = mlc::tensor_storage_t<T>;
     auto sh = t.shape();
-    return std::make_tuple(
-        std::make_tuple((int)sh[0], (int)sh[1], (int)sh[2]),
-        mlc_pack_detail::from_storage<T, S>(t.storage()));
+    if constexpr (std::is_same_v<T, S>) {
+        return std::tuple<std::tuple<int, int, int>, const std::vector<S>&>(
+            std::make_tuple((int)sh[0], (int)sh[1], (int)sh[2]), t.storage());
+    } else {
+        return std::make_tuple(
+            std::make_tuple((int)sh[0], (int)sh[1], (int)sh[2]),
+            mlc_pack_detail::from_storage<T, S>(t.storage()));
+    }
 }
 
 template <class T>
@@ -393,14 +407,18 @@ mlc::Tensor4<T> morloc_packTensor4(
 }
 
 template <class T>
-std::tuple<std::tuple<int, int, int, int>, std::vector<T>>
-morloc_unpackTensor4(const mlc::Tensor4<T>& t)
+auto morloc_unpackTensor4(const mlc::Tensor4<T>& t)
 {
     using S = mlc::tensor_storage_t<T>;
     auto sh = t.shape();
-    return std::make_tuple(
-        std::make_tuple((int)sh[0], (int)sh[1], (int)sh[2], (int)sh[3]),
-        mlc_pack_detail::from_storage<T, S>(t.storage()));
+    if constexpr (std::is_same_v<T, S>) {
+        return std::tuple<std::tuple<int, int, int, int>, const std::vector<S>&>(
+            std::make_tuple((int)sh[0], (int)sh[1], (int)sh[2], (int)sh[3]), t.storage());
+    } else {
+        return std::make_tuple(
+            std::make_tuple((int)sh[0], (int)sh[1], (int)sh[2], (int)sh[3]),
+            mlc_pack_detail::from_storage<T, S>(t.storage()));
+    }
 }
 
 template <class T>
@@ -425,14 +443,18 @@ mlc::Tensor5<T> morloc_packTensor5(
 }
 
 template <class T>
-std::tuple<std::tuple<int, int, int, int, int>, std::vector<T>>
-morloc_unpackTensor5(const mlc::Tensor5<T>& t)
+auto morloc_unpackTensor5(const mlc::Tensor5<T>& t)
 {
     using S = mlc::tensor_storage_t<T>;
     auto sh = t.shape();
-    return std::make_tuple(
-        std::make_tuple((int)sh[0], (int)sh[1], (int)sh[2], (int)sh[3], (int)sh[4]),
-        mlc_pack_detail::from_storage<T, S>(t.storage()));
+    if constexpr (std::is_same_v<T, S>) {
+        return std::tuple<std::tuple<int, int, int, int, int>, const std::vector<S>&>(
+            std::make_tuple((int)sh[0], (int)sh[1], (int)sh[2], (int)sh[3], (int)sh[4]), t.storage());
+    } else {
+        return std::make_tuple(
+            std::make_tuple((int)sh[0], (int)sh[1], (int)sh[2], (int)sh[3], (int)sh[4]),
+            mlc_pack_detail::from_storage<T, S>(t.storage()));
+    }
 }
 
 #endif
