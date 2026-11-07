@@ -32,16 +32,16 @@ source Cpp from "tensor.hpp"
     )
 
 instance Eq (Matrix d1 d2 a) where
-  %inline source Cpp from "tensor.hpp" ("morloc_tensor_eq" as (==))
+  %inline source Cpp from "tensor.hpp" ("morloc_tensor_eq" as (==), "morloc_tensor_ne" as (!=))
 
 instance Eq (Tensor3 d1 d2 d3 a) where
-  %inline source Cpp from "tensor.hpp" ("morloc_tensor_eq" as (==))
+  %inline source Cpp from "tensor.hpp" ("morloc_tensor_eq" as (==), "morloc_tensor_ne" as (!=))
 
 instance Eq (Tensor4 d1 d2 d3 d4 a) where
-  %inline source Cpp from "tensor.hpp" ("morloc_tensor_eq" as (==))
+  %inline source Cpp from "tensor.hpp" ("morloc_tensor_eq" as (==), "morloc_tensor_ne" as (!=))
 
 instance Eq (Tensor5 d1 d2 d3 d4 d5 a) where
-  %inline source Cpp from "tensor.hpp" ("morloc_tensor_eq" as (==))
+  %inline source Cpp from "tensor.hpp" ("morloc_tensor_eq" as (==), "morloc_tensor_ne" as (!=))
 
 instance Packable ((Int, Int), Vector (d1 * d2) a) (Matrix d1 d2 a) where
   source Cpp from "tensor.hpp"

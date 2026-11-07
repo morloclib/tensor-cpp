@@ -269,6 +269,11 @@ bool morloc_tensor_eq(const mlc::Tensor<T, N>& a, const mlc::Tensor<T, N>& b) {
     return a.shape() == b.shape() && a.storage() == b.storage();
 }
 
+template <class T, int N>
+bool morloc_tensor_ne(const mlc::Tensor<T, N>& a, const mlc::Tensor<T, N>& b) {
+    return !morloc_tensor_eq(a, b);
+}
+
 // ---------------------------------------------------------------------------
 // Packable: tuple-of-(dims, flat-vector) <-> mlc::Tensor.
 //
